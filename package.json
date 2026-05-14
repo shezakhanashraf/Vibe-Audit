@@ -1,0 +1,32 @@
+{
+  "name": "vibe-audit",
+  "version": "2.0.0",
+  "description": "Behavioral regression auditor — catches silent breaks in pull requests even when all tests pass.",
+  "main": "scripts/analyze-diff.js",
+  "scripts": {
+    "analyze": "node scripts/analyze-diff.js",
+    "test": "playwright test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shezakhanashraf/Vibe-Audit.git"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "dotenv": "^16.4.5",
+    "simple-git": "^3.36.0"
+  },
+  "optionalDependencies": {
+    "openai": "^4.52.0",
+    "@anthropic-ai/sdk": "^0.24.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "@types/node": "^20.14.0"
+  }
+}

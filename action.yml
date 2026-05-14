@@ -1,0 +1,85 @@
+name: 'Vibe Audit'
+description: 'Behavioral regression auditor — catches silent breaks in PRs even when tests pass. Supports Gemini, OpenAI, and Anthropic.'
+author: 'shezakhanashraf'
+
+branding:
+  icon: 'shield'
+  color: 'blue'
+
+inputs:
+  provider:
+    description: 'LLM provider to use: gemini, openai, or anthropic'
+    required: false
+    default: 'gemini'
+  model:
+    description: 'Model name override (e.g. gpt-4o, claude-sonnet-4-20250514)'
+    required: false
+  gemini-api-key:
+    description: 'Gemini API key'
+    required: false
+  openai-api-key:
+    description: 'OpenAI API key'
+    required: false
+  anthropic-api-key:
+    description: 'Anthropic API key'
+    required: false
+  run-tsc:
+    description: 'Run TypeScript compiler check before analysis'
+    required: false
+    default: 'true'
+  run-eslint:
+    description: 'Run ESLint check before analysis'
+    required: false
+    default: 'true'
+  trace-deps:
+    description: 'Trace dependency graph for changed files'
+    required: false
+    default: 'true'
+  test-dir:
+    description: 'Directory containing baseline tests'
+    required: false
+    default: 'tests'
+  qure-test-dir:
+    description: 'Directory containing Qure-generated tests'
+    required: false
+    default: 'tests/qure'
+
+outputs:
+  report:
+    description: 'The generated audit report in markdown'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install Vibe Audit dependencies
+      shell: bash
+      run: |
+        cd ${{ github.action_path }}
+        npm ci --ignore-scripts
+
+    - name: Run analysis
+      shell: bash
+      env:
+        GEMINI_API_KEY: ${{ inputs.gemini-api-key }}
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        VIBE_AUDIT_PROVIDER: ${{ inputs.provider }}
+        VIBE_AUDIT_MODEL: ${{ inputs.model }}
+        VIBE_AUDIT_TSC: ${{ inputs.run-tsc }}
+        VIBE_AUDIT_ESLINT: ${{ inputs.run-eslint }}
+        QURE_TEST_DIR: ${{ inputs.qure-test-dir }}
+      run: node ${{ github.action_path }}/scripts/analyze-diff.js
+
+    - name: Set output
+      shell: bash
+      run: |
+        if [ -f vibe-audit-report.md ]; then
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          cat vibe-audit-report.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
