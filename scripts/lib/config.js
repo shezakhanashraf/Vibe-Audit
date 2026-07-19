@@ -114,6 +114,8 @@ function loadConfig() {
   if (process.env.VIBE_AUDIT_MAX_DIFF) config.maxDiffChars = parseInt(process.env.VIBE_AUDIT_MAX_DIFF, 10);
   if (process.env.VIBE_AUDIT_TSC === "false") config.runTsc = false;
   if (process.env.VIBE_AUDIT_ESLINT === "false") config.runEslint = false;
+  if (process.env.VIBE_AUDIT_TRACE_DEPS === "false") config.traceDeps = false;
+  if (process.env.VIBE_AUDIT_TEST_DIR) config.testDir = process.env.VIBE_AUDIT_TEST_DIR;
 
   // Qure-specific overrides
   if (process.env.QURE_AUTO_DETECT === "false") config.qure.autoDetect = false;

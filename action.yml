@@ -84,6 +84,8 @@ runs:
         VIBE_AUDIT_MODEL: ${{ inputs.model }}
         VIBE_AUDIT_TSC: ${{ inputs.run-tsc }}
         VIBE_AUDIT_ESLINT: ${{ inputs.run-eslint }}
+        VIBE_AUDIT_TRACE_DEPS: ${{ inputs.trace-deps }}
+        VIBE_AUDIT_TEST_DIR: ${{ inputs.test-dir }}
         QURE_TEST_DIR: ${{ inputs.qure-test-dir }}
         QURE_AUTO_DETECT: ${{ inputs.qure-auto-detect }}
         QURE_COVERAGE_GAPS: ${{ inputs.qure-coverage-gaps }}

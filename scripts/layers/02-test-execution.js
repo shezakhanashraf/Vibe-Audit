@@ -304,7 +304,7 @@ function runSingleTest(test, config) {
     result.stdout = output.slice(-500); // last 500 chars
   } catch (err) {
     result.passed = false;
-    result.duration = Date.now() - Date.now(); // approximate
+    result.duration = Date.now() - start;
     result.error = (err.stdout || err.stderr || err.message || "").slice(0, 1000);
     result.stdout = result.error;
   }

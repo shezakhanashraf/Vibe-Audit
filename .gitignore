@@ -8,8 +8,9 @@ package-lock.json
 demo/node_modules/
 demo/.next/
 demo/package-lock.json
+.DS_Store
 
 # v3 layer artifacts
 .vibe-audit/screenshots/
-
 test-results/
+demo/test-results/
