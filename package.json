@@ -4,7 +4,12 @@
   "description": "Behavioral regression auditor — catches silent breaks in pull requests even when all tests pass.",
   "main": "scripts/analyze-diff.js",
   "scripts": {
+    "setup": "bash setup.sh",
     "analyze": "node scripts/analyze-diff.js",
+    "analyze:v3": "node scripts/analyze-v3.js",
+    "qure": "node scripts/qure-run.js",
+    "qure:suggest": "node scripts/qure-run.js --suggest-tests",
+    "qure:coverage": "node scripts/qure-run.js --check-coverage",
     "test": "playwright test"
   },
   "engines": {

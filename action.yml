@@ -1,5 +1,5 @@
 name: 'Vibe Audit'
-description: 'Behavioral regression auditor — catches silent breaks in PRs even when tests pass. Supports Gemini, OpenAI, and Anthropic.'
+description: 'Behavioral regression auditor — catches silent breaks in PRs even when tests pass. Supports Gemini, OpenAI, Anthropic, and Qure test integration.'
 author: 'shezakhanashraf'
 
 branding:
@@ -43,6 +43,18 @@ inputs:
     description: 'Directory containing Qure-generated tests'
     required: false
     default: 'tests/qure'
+  qure-auto-detect:
+    description: 'Auto-detect Qure tests anywhere in the project'
+    required: false
+    default: 'true'
+  qure-coverage-gaps:
+    description: 'Show suggested flows to record in Qure'
+    required: false
+    default: 'true'
+  qure-risk-weight:
+    description: 'Risk weight multiplier for Qure-recorded flows (default: 1.5)'
+    required: false
+    default: '1.5'
 
 outputs:
   report:
@@ -73,6 +85,9 @@ runs:
         VIBE_AUDIT_TSC: ${{ inputs.run-tsc }}
         VIBE_AUDIT_ESLINT: ${{ inputs.run-eslint }}
         QURE_TEST_DIR: ${{ inputs.qure-test-dir }}
+        QURE_AUTO_DETECT: ${{ inputs.qure-auto-detect }}
+        QURE_COVERAGE_GAPS: ${{ inputs.qure-coverage-gaps }}
+        QURE_RISK_WEIGHT: ${{ inputs.qure-risk-weight }}
       run: node ${{ github.action_path }}/scripts/analyze-diff.js
 
     - name: Set output

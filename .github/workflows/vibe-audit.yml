@@ -30,16 +30,33 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          cd demo && npm ci
 
-      - name: Run Vibe Audit
-        run: node scripts/analyze-diff.js
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Vibe Audit v3 (multi-layer)
+        run: node scripts/analyze-v3.js
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # To use a different provider, set these instead:
           # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # VIBE_AUDIT_PROVIDER: openai
+          VIBE_AUDIT_VISUAL: 'true'
+          VIBE_AUDIT_BASE_URL: 'http://localhost:3000'
+
+      - name: Upload visual artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibe-audit-visual
+          path: |
+            .vibe-audit/screenshots/
+            demo/test-results/
+          if-no-files-found: ignore
 
       - name: Post report as PR comment
         if: always()

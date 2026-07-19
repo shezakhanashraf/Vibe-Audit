@@ -1,16 +1,6 @@
 const simpleGit = require("simple-git");
 const fs = require("fs");
 
-async function detectRemote() {
-  const git = simpleGit();
-  try {
-    const remotes = await git.getRemotes();
-    return remotes.length > 0;
-  } catch (_) {
-    return false;
-  }
-}
-
 function shouldExcludeFile(filePath, config) {
   if (config.excludePaths.some((p) => filePath.includes(p))) return true;
   if (config.excludeExtensions.some((ext) => filePath.toLowerCase().endsWith(ext))) return true;
@@ -20,40 +10,58 @@ function shouldExcludeFile(filePath, config) {
 async function getFilteredDiff(config) {
   const git = simpleGit();
   const baseRef = process.env.GITHUB_BASE_REF || "main";
-  const hasRemote = await detectRemote();
 
-  if (hasRemote) {
-    try {
-      await git.fetch("origin", baseRef);
-    } catch (err) {
-      console.log(`Warning: could not fetch origin/${baseRef}: ${err.message}`);
+  // Try git remote diff first
+  try {
+    const remotes = await git.getRemotes();
+    if (remotes.length > 0) {
+      try { await git.fetch("origin", baseRef); } catch (_) {}
+
+      const nameOnly = await git.raw([
+        "diff",
+        "--name-only",
+        "origin/" + baseRef + "...HEAD"
+      ]);
+
+      const files = nameOnly
+        .split("\n")
+        .map(f => f.trim())
+        .filter(Boolean)
+        .filter(f => !shouldExcludeFile(f, config));
+
+      if (files.length > 0) {
+        const diff = await git.diff([
+          "origin/" + baseRef + "...HEAD",
+          "--",
+          ...files
+        ]);
+
+        if (diff) return { diff, files, source: "git" };
+      }
     }
+  } catch (_) {}
 
-    const nameOnly = await git.raw(["diff", "--name-only", `origin/${baseRef}...HEAD`]);
-    const files = nameOnly
-      .split("\n")
-      .map((f) => f.trim())
-      .filter(Boolean)
-      .filter((f) => !shouldExcludeFile(f, config));
-
-    if (files.length === 0) return { diff: "", files: [], source: "git" };
-
-    const diff = await git.diff([`origin/${baseRef}...HEAD`, "--", ...files]);
-    return { diff, files, source: "git" };
-  }
-
-  // Local fallback
-  console.log("No git remote detected. Falling back to local diff file...");
+  // Fallback to local patch file
   const localDiffPath = process.env.LOCAL_DIFF_PATH || "local-diff.patch";
+
   if (!fs.existsSync(localDiffPath)) {
     return { diff: "", files: [], source: "none" };
   }
+
+  console.log("Reading diff from " + localDiffPath);
+
   const content = fs.readFileSync(localDiffPath, "utf-8").trim();
-  return {
-    diff: content || "",
-    files: content ? ["(from local-diff.patch)"] : [],
-    source: "local",
-  };
+  const files = [];
+
+  for (const line of content.split("\n")) {
+    const match = line.match(/^diff --git a\/(.+?) b\/(.+)/);
+
+    if (match && !shouldExcludeFile(match[2], config)) {
+      files.push(match[2]);
+    }
+  }
+
+  return { diff: content || "", files, source: "local" };
 }
 
 module.exports = { getFilteredDiff };
